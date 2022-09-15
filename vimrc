@@ -1,7 +1,8 @@
 call plug#begin()
 Plug 'jiangmiao/auto-pairs'
 Plug 'epilande/vim-react-snippets'
- 
+Plug 'habamax/vim-godot'
+Plug 'tomlion/vim-solidity'
   Plug 'SirVer/ultisnips'
   Plug 'morhetz/gruvbox'
   Plug 'HerringtonDarkholme/yats.vim'
@@ -15,19 +16,23 @@ Plug 'epilande/vim-react-snippets'
   Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
   Plug 'junegunn/fzf.vim'
   Plug 'mattn/emmet-vim'
-  Plug 'prettier/vim-prettier', { 'do': 'npm install' }
+  "Plug 'prettier/vim-prettier', { 'do': 'npm install' }
   Plug 'autozimu/LanguageClient-neovim', {
     \ 'branch': 'next',
     \ 'do': 'bash install.sh'
     \ }
- Plug 'pappasam/coc-jedi', { 'do': 'yarn install --frozen-lockfile && yarn build' }
+ "Plug 'pappasam/coc-jedi', { 'do': 'yarn install --frozen-lockfile && yarn build' }
 
   "Plug 'pappasam/coc-jedi', { 'do': 'npm install --frozen-lockfile && npm build' }
+
   if has('nvim')
+
   inoremap <silent><expr> <c-space> coc#refresh()
 else
-  inoremap <silent><expr> <c-@> coc#refresh()
+"inoremap <silent><expr> <c-@> coc#refresh()
 endif
+
+map <leader>R : !python3 -m manim % -pql<CR> <CR>
 
 " fzf "
 let g:fzf_preview_window = ['right:50%','ctrl-/']
@@ -78,20 +83,21 @@ colorscheme gruvbox
 set bg=dark
 set smartindent
 set nu
-set tabstop=2 shiftwidth=2 expandtab
+set tabstop=4 shiftwidth=4 expandtab
 set so=999
+
 
 nmap <Space> a
 nmap s <C-w>
 "nmap ZZ ""
 
-imap <Tab> <C-n>
-imap ff <Esc>
+"imap <Tab> <C-n>
+"imap ff <Esc>
 nnoremap <silent> <Leader>F :Files<CR>
 "nnoremap F :Files<CR>
 "nnoremap <silent> <Leader>S :Rg<CR>
-nnoremap L :Lines<CR>
-nnoremap B :Buffers<CR>
+nnoremap <Leader>L :Lines<CR>
+nnoremap <Leader>B :Buffers<CR>
 nmap  Sh :set syntax=html<CR>
 nmap  Sr :set syntax=javascriptreact<CR>
 "Input snippets
@@ -138,7 +144,6 @@ if has("patch-8.1.1564")
 else
   set signcolumn=yes
 endif
-
 " Use tab for trigger completion with characters ahead and navigate.
 " NOTE: Use command ':verbose imap <tab>' to make sure tab is not mapped by
 " other plugin before putting this into your config.
@@ -308,3 +313,73 @@ command! -bang -nargs=? -complete=dir Files
     \ call fzf#vim#files(<q-args>, {'options': ['--layout=reverse', '--info=inline', '--preview', 'cat {}']}, <bang>0)
 
 set tags=tags
+let g:godot_executable = '/home/aki/Downloads/Godot_v3.3.2-stable_x11.64'
+'
+" coc snippets
+" Use <C-l> for trigger snippet expand.
+imap <C-l> <Plug>(coc-snippets-expand)
+" Use <C-j> for select text for visual placeholder of snippet.
+vmap <C-j> <Plug>(coc-snippets-select)
+" Use <C-j> for jump to next placeholder, it's default of coc.nvim
+let g:coc_snippet_next = '<c-j>'
+" Use <C-k> for jump to previous placeholder, it's default of coc.nvim
+let g:coc_snippet_prev = '<c-k>'
+" Use <C-j> for both expand and jump (make expand higher priority.)
+imap <C-j> <Plug>(coc-snippets-expand-jump)
+" Use <leader>x for convert visual selected code to snippet
+xmap <leader>x  <Plug>(coc-convert-snippet)
+
+
+
+"inoremap <silent><expr> <TAB>
+      "\ pumvisible() ? coc#_select_confirm() :
+      "\ coc#expandableOrJumpable() ? "\<C-r>=coc#rpc#request('doKeymap', ['snippets-expand-jump',''])\<CR>" :
+      "\ <SID>check_back_space() ? "\<TAB>" :
+      "\ coc#refresh()
+
+" use <tab> for trigger completion and navigate to the next complete item
+function! CheckBackspace() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+
+inoremap <silent><expr> <Tab>
+      \ coc#pum#visible() ? coc#pum#next(1) :
+      \ CheckBackspace() ? "\<Tab>" :
+      \ coc#refresh()
+
+"inoremap <silent><expr> <cr> pumvisible() ? coc#_select_confirm()
+                              "\: "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"
+
+function! s:check_back_space() abort
+  let col = col('.') - 1
+  return !col || getline('.')[col - 1]  =~# '\s'
+endfunction
+     
+let g:coc_snippet_next = '<tab>'
+" Run jest for current project
+command! -nargs=0 Jest :call  CocAction('runCommand', 'jest.projectTest')
+
+" Run jest for current file
+command! -nargs=0 JestCurrent :call  CocAction('runCommand', 'jest.fileTest', ['%'])
+
+" Run jest for current test
+nnoremap <leader>te :call CocAction('runCommand', 'jest.singleTest')<CR>
+
+" Init jest in current cwd, require global jest command exists
+command! JestInit :call CocAction('runCommand', 'jest.init')
+
+set noswapfile
+
+inoremap <silent><expr> <CR> coc#pum#visible() ? coc#pum#confirm() : "\<CR>"
+
+map <leader>u wbveUb
+
+autocmd FileType sql call SqlFormatter()
+augroup end
+function SqlFormatter()
+    set noai
+    " set mappings...
+    map ,pt  :%!sqlformat --reindent --keywords upper --identifiers lower -<CR>
+endfunction
+
